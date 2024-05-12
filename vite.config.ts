@@ -9,6 +9,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Replace 'my-local-module' with your actual module name
+      '@mlc-ai/web-llm': path.resolve(__dirname, './thirdparty/web-llm/lib'),
+
     },
   },
 });

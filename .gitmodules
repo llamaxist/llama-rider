@@ -1,0 +1,3 @@
+[submodule "thirdparty/web-llm"]
+	path = thirdparty/web-llm
+	url = https://github.com/llamaxist/web-llm.git
