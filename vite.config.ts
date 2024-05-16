@@ -6,6 +6,7 @@ import path from "path";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), checker({ typescript: true })],
+  base: "/llama-rider/",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
