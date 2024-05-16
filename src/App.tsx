@@ -10,6 +10,7 @@ import MessageList from "./components/MessageList";
 const appConfig = webllm.prebuiltAppConfig;
 appConfig.useIndexedDBCache = true;
 
+
 if (appConfig.useIndexedDBCache) {
   console.log("Using IndexedDB Cache");
 } else {
@@ -41,8 +42,6 @@ function App() {
   };
 
   async function loadEngine() {
-    console.log("Loading engine");
-
     setChatHistory((history) => [
       ...history.slice(0, -1),
       {
@@ -50,12 +49,29 @@ function App() {
         content: "Loading model... (this might take a bit)",
       },
     ]);
+
+    const modelUrl = "https://llamaxist.github.io/meta-llama3/model/"
+    appConfig.model_list.push(
+      {
+        "model_url": modelUrl,
+        "model_id": "llama3-8b",
+        "model_lib_url": modelUrl + "llama3.wasm",
+      }
+    );
+    // override default
+    const chatOpts = {
+      "repetition_penalty": 1.01,
+    };
+
+    console.log("> Loading engine for model=" + selectedModel);
+    console.log("> appConfig=" + JSON.stringify(appConfig))
     const engine: webllm.EngineInterface = await webllm.CreateWebWorkerEngine(
       new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }),
       selectedModel,
       /*engineConfig=*/ {
-        initProgressCallback: initProgressCallback,
-        appConfig: appConfig,
+        initProgressCallback,
+        appConfig,
+        chatOpts
       }
     );
     setEngine(engine);
@@ -177,65 +193,68 @@ function App() {
   }
 
   return (
-    <div className="px-4 w-full">
-      <div className="absolute top-0 left-0 p-4 flex items-center gap-2">
-        <div>
-          <ResetChatButton resetChat={resetChat} />
-        </div>
-        <DebugUI loadEngine={loadEngine} progress={progress} />
-        <ModelsDropdown resetEngineAndChatHistory={resetEngineAndChatHistory} />
-      </div>
-
-      <div className="max-w-3xl mx-auto flex flex-col h-screen">
-        {chatHistory.length === 0 ? (
-          <div className="flex justify-center items-center h-full flex-col overflow-y-scroll">
-            <img
-              src="favicon.png"
-              alt="Secret Llama"
-              className="mx-auto w-32 rounded-full mb-4 mt-2"
-            />
-            <div className="max-w-2xl flex flex-col justify-center ">
-              <h1 className="text-3xl font-medium  mb-8 leading-relaxed text-center">
-                Welcome to Secret Llama
-              </h1>
-              <h2 className="text-base mb-4 prose">
-                Secret Llama is a free and fully private chatbot. Unlike
-                ChatGPT, the models available here run entirely within your
-                browser which means:
-                <ol>
-                  <li>Your conversation data never leaves your computer.</li>
-                  <li>
-                    After the model is initially downloaded, you can disconnect
-                    your WiFi. It will work offline.
-                  </li>
-                </ol>
-                <p>
-                  Note: the first message can take a while to process because
-                  the model needs to be fully downloaded to your computer. But
-                  on future visits to this website, the model will load quickly
-                  from the local storage on your computer.
-                </p>
-                <p>Supported browsers: Chrome, Edge (GPU required)</p>
-                <p>
-                  This project is open source.{" "}
-                  <a
-                    href="https://github.com/abi/secret-llama"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    See the Github page
-                  </a>{" "}
-                  for more details and to submit bugs and feature requests.
-                </p>
-              </h2>
-            </div>
+    <div>
+      <div className="px-4 w-full">
+        <div className="absolute top-0 left-0 p-4 flex items-center gap-2">
+          <div>
+            <ResetChatButton resetChat={resetChat} />
           </div>
-        ) : (
-          <MessageList />
-        )}
-        <UserInput onSend={onSend} onStop={onStop} />
+          <DebugUI loadEngine={loadEngine} progress={progress} />
+          <ModelsDropdown resetEngineAndChatHistory={resetEngineAndChatHistory} />
+        </div>
+
+        <div className="max-w-3xl mx-auto flex flex-col h-screen">
+          {chatHistory.length === 0 ? (
+            <div className="flex justify-center items-center h-full flex-col overflow-y-scroll">
+              <img
+                src="favicon.png"
+                alt="Secret Llama"
+                className="mx-auto w-32 rounded-full mb-4 mt-2"
+              />
+              <div className="max-w-2xl flex flex-col justify-center ">
+                <h1 className="text-3xl font-medium  mb-8 leading-relaxed text-center">
+                  Welcome to Secret Llama
+                </h1>
+                <h2 className="text-base mb-4 prose">
+                  Secret Llama is a free and fully private chatbot. Unlike
+                  ChatGPT, the models available here run entirely within your
+                  browser which means:
+                  <ol>
+                    <li>Your conversation data never leaves your computer.</li>
+                    <li>
+                      After the model is initially downloaded, you can disconnect
+                      your WiFi. It will work offline.
+                    </li>
+                  </ol>
+                  <p>
+                    Note: the first message can take a while to process because
+                    the model needs to be fully downloaded to your computer. But
+                    on future visits to this website, the model will load quickly
+                    from the local storage on your computer.
+                  </p>
+                  <p>Supported browsers: Chrome, Edge (GPU required)</p>
+                  <p>
+                    This project is open source.{" "}
+                    <a
+                      href="https://github.com/abi/secret-llama"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      See the Github page
+                    </a>{" "}
+                    for more details and to submit bugs and feature requests.
+                  </p>
+                </h2>
+              </div>
+            </div>
+          ) : (
+            <MessageList />
+          )}
+          <UserInput onSend={onSend} onStop={onStop} />
+        </div>
       </div>
     </div>
+
   );
 }
 
